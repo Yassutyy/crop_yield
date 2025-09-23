@@ -1,89 +1,52 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, classification_report, confusion_matrix
 
 st.title("🌱 AgriYield – Crop Yield Prediction Dashboard")
 
-# Upload dataset
-uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    st.write("### Dataset Preview", df.head())
+# ---------------- Load Dataset & Train Models ----------------
+# Load your training dataset
+df = pd.read_csv("data/crop_yield.csv")  # make sure your CSV is in 'data/' folder
 
-    # Show basic stats
-    st.write("### Data Summary")
-    st.write(df.describe())
+# Features and target
+X = df[['Fertilizer', 'Temp', 'N', 'P', 'K']]
+y = df['Yield']
 
-    # Correlation heatmap
-    st.write("### Correlation Heatmap")
-    fig, ax = plt.subplots()
-    sns.heatmap(df.corr(), annot=True, cmap="RdYlBu", ax=ax)
-    st.pyplot(fig)
+# Split dataset for training
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Features & Target
-    X = df[['Fertilizer', 'Temp', 'N', 'P', 'K']]
-    y = df['Yield']
+# Train Random Forest Regressor
+rf = RandomForestRegressor(n_estimators=200, random_state=42)
+rf.fit(X_train, y_train)
 
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Train Decision Tree for classification (High vs Low Yield)
+median_yield = df['Yield'].median()
+df['Yield_Class'] = (df['Yield'] >= median_yield).astype(int)
+y_class = df['Yield_Class']
 
-    # Regression Models
-    st.write("## Regression Models")
+X_train_cls, X_test_cls, y_train_cls, y_test_cls = train_test_split(X, y_class, test_size=0.2, random_state=42)
+dt_clf = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt_clf.fit(X_train_cls, y_train_cls)
 
-    # Linear Regression
-    lr = LinearRegression()
-    lr.fit(X_train, y_train)
-    y_pred_lr = lr.predict(X_test)
-    rmse_lr = np.sqrt(mean_squared_error(y_test, y_pred_lr))
-    r2_lr = r2_score(y_test, y_pred_lr)
-    st.write("### Linear Regression")
-    st.write(f"RMSE: {rmse_lr:.2f}, R²: {r2_lr:.2f}")
+# ---------------- Prediction Form ----------------
+st.write("## 🌾 Predict Yield for New Inputs")
 
-    # Random Forest Regressor
-    rf = RandomForestRegressor(n_estimators=200, random_state=42)
-    rf.fit(X_train, y_train)
-    y_pred_rf = rf.predict(X_test)
-    rmse_rf = np.sqrt(mean_squared_error(y_test, y_pred_rf))
-    r2_rf = r2_score(y_test, y_pred_rf)
-    st.write("### Random Forest Regressor")
-    st.write(f"RMSE: {rmse_rf:.2f}, R²: {r2_rf:.2f}")
+fert = st.number_input("Fertilizer", min_value=0.0)
+temp = st.number_input("Temperature", min_value=0.0)
+n = st.number_input("Nitrogen (N)", min_value=0.0)
+p = st.number_input("Phosphorus (P)", min_value=0.0)
+k = st.number_input("Potassium (K)", min_value=0.0)
 
-    # Classification (High vs Low Yield)
-    st.write("## Classification Models")
-    median_yield = df['Yield'].median()
-    df['Yield_Class'] = (df['Yield'] >= median_yield).astype(int)
-    y_class = df['Yield_Class']
+if st.button("Predict Yield"):
+    input_data = np.array([[fert, temp, n, p, k]])
 
-    X_train, X_test, y_train_class, y_test_class = train_test_split(X, y_class, test_size=0.2, random_state=42)
+    # Regression prediction
+    predicted_yield = rf.predict(input_data)[0]
+    st.success(f"🌱 Predicted Yield: {predicted_yield:.2f} tons/hectare")
 
-    # Logistic Regression
-    log_clf = LogisticRegression(max_iter=1000)
-    log_clf.fit(X_train, y_train_class)
-    y_pred_log = log_clf.predict(X_test)
-    acc_log = accuracy_score(y_test_class, y_pred_log)
-    st.write("### Logistic Regression Classifier")
-    st.write(f"Accuracy: {acc_log:.2f}")
-
-    # Decision Tree
-    dt_clf = DecisionTreeClassifier(max_depth=5, random_state=42)
-    dt_clf.fit(X_train, y_train_class)
-    y_pred_dt = dt_clf.predict(X_test)
-    acc_dt = accuracy_score(y_test_class, y_pred_dt)
-    st.write("### Decision Tree Classifier")
-    st.write(f"Accuracy: {acc_dt:.2f}")
-
-    # Confusion Matrix Heatmap (Decision Tree)
-    cm = confusion_matrix(y_test_class, y_pred_dt)
-    st.write("#### Confusion Matrix (Decision Tree)")
-    fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
-                xticklabels=["Low Yield", "High Yield"],
-                yticklabels=["Low Yield", "High Yield"], ax=ax)
-    st.pyplot(fig)
+    # Classification
+    yield_class = "High Yield" if dt_clf.predict(input_data)[0] == 1 else "Low Yield"
+    st.info(f"Classification: {yield_class}")
