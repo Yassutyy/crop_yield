@@ -9,7 +9,7 @@ st.title("🌱 AgriYield – Crop Yield Prediction Dashboard")
 
 # ---------------- Load Dataset & Train Models ----------------
 # Load your training dataset
-df = pd.read_csv("data/crop_yield.csv")  # make sure your CSV is in 'data/' folder
+df = pd.read_csv("crop_yield.csv")  # make sure your CSV is in 'data/' folder
 
 # Features and target
 X = df[['Fertilizer', 'Temp', 'N', 'P', 'K']]
@@ -50,3 +50,4 @@ if st.button("Predict Yield"):
     # Classification
     yield_class = "High Yield" if dt_clf.predict(input_data)[0] == 1 else "Low Yield"
     st.info(f"Classification: {yield_class}")
+
