@@ -38,6 +38,9 @@ lr_model.fit(X, y)
 rf_model.fit(X, y)
 dt_model.fit(X, y)
 
+# Median yield for classification
+median_yield = df['Yield'].median()
+
 # ---------------- Sidebar Menu ----------------
 st.sidebar.title("🌾 AgriYield Dashboard")
 menu = st.sidebar.radio("Navigate", ["🏠 Home", "📂 Dataset", "📊 Visualizations", "🔮 Predictions"])
@@ -47,15 +50,15 @@ if menu == "🏠 Home":
     st.title("🌱 AgriYield – Crop Yield Prediction Dashboard")
     st.markdown("""
     Welcome to **AgriYield**, an interactive crop yield prediction dashboard.  
-    This project helps in predicting crop yield based on:
-    - 🌡️ Temperature  
-    - 💧 Fertilizer usage  
-    - 🌿 Soil nutrients (N, P, K)  
-    
-    You can explore:
-    - 📂 The dataset  
-    - 📊 Data visualizations  
-    - 🔮 Predict yield using various ML models
+    This project predicts crop yield using Machine Learning models like:
+    - **Linear Regression**
+    - **Random Forest**
+    - **Decision Tree**
+
+    You can:
+    - 📂 Explore the dataset  
+    - 📊 Visualize the trends  
+    - 🔮 Predict yield and know if it's **High** or **Low**
     """)
 
 elif menu == "📂 Dataset":
@@ -119,4 +122,8 @@ elif menu == "🔮 Predictions":
                 prediction = dt_model.predict(input_data)
                 model_name = "Decision Tree Regressor"
 
-            st.success(f"🌾 Predicted Crop Yield using **{model_name}**: {prediction[0]:.2f} tons/hectare")
+            predicted_yield = prediction[0]
+            yield_type = "🌾 High Yield" if predicted_yield > median_yield else "🌱 Low Yield"
+
+            st.success(f"**Predicted Crop Yield using {model_name}:** {predicted_yield:.2f} tons/hectare")
+            st.info(f"Yield Category: **{yield_type}**")
