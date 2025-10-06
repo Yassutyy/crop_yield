@@ -1,55 +1,85 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeClassifier
+from io import StringIO
 
-# Load the trained model (make sure the .pkl file is present)
-model = joblib.load("model.pkl")
+# ---------------- Load Dataset ----------------
+csv_data = """
+Fertilizer,Temp,N,P,K,Yield
+50,30,20,10,10,3.5
+60,32,25,12,12,4.0
+70,28,30,14,14,4.8
+80,31,28,13,16,5.0
+90,29,35,15,18,5.5
+40,35,15,8,7,2.8
+55,33,18,9,10,3.2
+65,30,22,11,11,4.1
+75,34,27,12,15,4.7
+85,32,33,14,17,5.2
+"""
+df = pd.read_csv(StringIO(csv_data))
 
-# App title
-st.title("🌾 AgriYield – Crop Yield Prediction Dashboard")
+# ---------------- Train Models ----------------
+X = df[['Fertilizer', 'Temp', 'N', 'P', 'K']]
+y = df['Yield']
 
-# Sidebar navigation
-menu = st.sidebar.selectbox("Navigation", ["Home", "Dataset", "Visualization", "Prediction"])
+# Regression model (for yield prediction)
+rf = RandomForestRegressor(n_estimators=200, random_state=42)
+rf.fit(X, y)
 
-# ---------------------------
-# 1️⃣ Home Page
-# ---------------------------
-if menu == "Home":
-    st.header("Welcome to AgriYield 🌱")
-    st.write("""
-    This Smart Farming Dashboard predicts crop yields based on key agricultural parameters like fertilizer usage, temperature, and soil nutrients (N, P, K).  
-    Use the sidebar to explore:
-    - 📊 Dataset and insights  
-    - 🌾 Visualizations  
-    - 🤖 Predict your yield
+# Classification model (for yield level: High/Low)
+median_yield = df['Yield'].median()
+df['Yield_Class'] = (df['Yield'] >= median_yield).astype(int)
+y_class = df['Yield_Class']
+dt_clf = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt_clf.fit(X, y_class)
+
+# ---------------- Sidebar Menu ----------------
+st.sidebar.title("🌱 AgriYield Dashboard")
+menu = st.sidebar.radio("Navigate", ["🏠 Home", "📂 Dataset", "📊 Visualizations", "🔮 Predictions"])
+
+# ---------------- Pages ----------------
+if menu == "🏠 Home":
+    st.title("🌱 AgriYield – Crop Yield Prediction")
+    st.markdown("""
+    Welcome to the **AgriYield Dashboard** 🌾  
+    This smart farming tool predicts **crop yield** based on parameters like **Fertilizer**, **Temperature**, and **Soil Nutrients (N, P, K)**.
+
+    **Use the menu to:**  
+    - 📂 Explore Dataset  
+    - 📊 View Visualizations  
+    - 🔮 Make Predictions  
     """)
 
-# ---------------------------
-# 2️⃣ Dataset Section
-# ---------------------------
-elif menu == "Dataset":
-    st.header("📋 Dataset Overview")
-    df = pd.read_csv("crop_yield.csv")
-    st.dataframe(df.head())
-    st.write("Shape of data:", df.shape)
+elif menu == "📂 Dataset":
+    st.header("📂 Dataset Preview")
+    st.dataframe(df)
 
-# ---------------------------
-# 3️⃣ Visualization Section
-# ---------------------------
-elif menu == "Visualization":
-    st.header("📈 Visualizations")
-    df = pd.read_csv("crop_yield.csv")
-    st.bar_chart(df[['Fertilizer', 'yield']])
-    st.line_chart(df[['Temp', 'yield']])
+    st.subheader("📊 Summary Statistics")
+    st.write(df.describe())
 
-# ---------------------------
-# 4️⃣ Prediction Section
-# ---------------------------
-elif menu == "Prediction":
-    st.header("🤖 Crop Yield Prediction")
+elif menu == "📊 Visualizations":
+    st.header("📊 Visualizations")
 
-    st.write("Enter the details below to predict crop yield:")
+    # Correlation Heatmap
+    st.subheader("Correlation Heatmap")
+    fig, ax = plt.subplots()
+    sns.heatmap(df.corr(), annot=True, cmap="RdYlBu", ax=ax)
+    st.pyplot(fig)
+
+    # Scatter Fertilizer vs Yield
+    st.subheader("Fertilizer vs Yield")
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=df, x="Fertilizer", y="Yield", ax=ax)
+    st.pyplot(fig)
+
+elif menu == "🔮 Predictions":
+    st.header("🔮 Make Predictions")
+    st.markdown("Enter the input values below to predict the expected **Crop Yield (tons/hectare)**.")
 
     # --- Input fields ---
     fertilizer = st.number_input("Fertilizer used (kg/ha)", min_value=0.0, step=0.1)
@@ -58,10 +88,18 @@ elif menu == "Prediction":
     P = st.number_input("Phosphorus content (P)", min_value=0.0, step=0.1)
     K = st.number_input("Potassium content (K)", min_value=0.0, step=0.1)
 
+    # --- Predict Button ---
     if st.button("Predict Yield"):
         if fertilizer == 0 or temp == 0 or N == 0 or P == 0 or K == 0:
             st.warning("⚠️ Please enter valid (non-zero) input values for all fields.")
         else:
             input_data = np.array([[fertilizer, temp, N, P, K]])
-            prediction = model.predict(input_data)
-            st.success(f"🌾 Predicted Crop Yield: **{prediction[0]:.2f} tons/hectare**")
+            prediction = rf.predict(input_data)[0]
+            yield_class = dt_clf.predict(input_data)[0]
+
+            st.success(f"🌾 **Predicted Crop Yield:** {prediction:.2f} tons/hectare")
+
+            if yield_class == 1:
+                st.info("✅ This corresponds to a **High Yield** region based on model classification.")
+            else:
+                st.warning("⚠️ This corresponds to a **Low Yield** region based on model classification.")
