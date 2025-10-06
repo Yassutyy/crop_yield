@@ -3,9 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeClassifier
-from io import StringIO
+from sklearn.tree import DecisionTreeRegressor
 
 # ---------------- Load Dataset ----------------
 csv_data = """
@@ -21,85 +22,101 @@ Fertilizer,Temp,N,P,K,Yield
 75,34,27,12,15,4.7
 85,32,33,14,17,5.2
 """
+from io import StringIO
 df = pd.read_csv(StringIO(csv_data))
 
-# ---------------- Train Models ----------------
+# ---------------- Split Data ----------------
 X = df[['Fertilizer', 'Temp', 'N', 'P', 'K']]
 y = df['Yield']
 
-# Regression model (for yield prediction)
-rf = RandomForestRegressor(n_estimators=200, random_state=42)
-rf.fit(X, y)
+# ---------------- Train Models ----------------
+lr_model = LinearRegression()
+rf_model = RandomForestRegressor(n_estimators=200, random_state=42)
+dt_model = DecisionTreeRegressor(max_depth=5, random_state=42)
 
-# Classification model (for yield level: High/Low)
-median_yield = df['Yield'].median()
-df['Yield_Class'] = (df['Yield'] >= median_yield).astype(int)
-y_class = df['Yield_Class']
-dt_clf = DecisionTreeClassifier(max_depth=5, random_state=42)
-dt_clf.fit(X, y_class)
+lr_model.fit(X, y)
+rf_model.fit(X, y)
+dt_model.fit(X, y)
 
 # ---------------- Sidebar Menu ----------------
-st.sidebar.title("🌱 AgriYield Dashboard")
+st.sidebar.title("🌾 AgriYield Dashboard")
 menu = st.sidebar.radio("Navigate", ["🏠 Home", "📂 Dataset", "📊 Visualizations", "🔮 Predictions"])
 
 # ---------------- Pages ----------------
 if menu == "🏠 Home":
-    st.title("🌱 AgriYield – Crop Yield Prediction")
+    st.title("🌱 AgriYield – Crop Yield Prediction Dashboard")
     st.markdown("""
-    Welcome to the **AgriYield Dashboard** 🌾  
-    This smart farming tool predicts **crop yield** based on parameters like **Fertilizer**, **Temperature**, and **Soil Nutrients (N, P, K)**.
-
-    **Use the menu to:**  
-    - 📂 Explore Dataset  
-    - 📊 View Visualizations  
-    - 🔮 Make Predictions  
+    Welcome to **AgriYield**, an interactive crop yield prediction dashboard.  
+    This project helps in predicting crop yield based on:
+    - 🌡️ Temperature  
+    - 💧 Fertilizer usage  
+    - 🌿 Soil nutrients (N, P, K)  
+    
+    You can explore:
+    - 📂 The dataset  
+    - 📊 Data visualizations  
+    - 🔮 Predict yield using various ML models
     """)
 
 elif menu == "📂 Dataset":
     st.header("📂 Dataset Preview")
-    st.dataframe(df)
+    st.write(df.head())
 
     st.subheader("📊 Summary Statistics")
     st.write(df.describe())
 
 elif menu == "📊 Visualizations":
-    st.header("📊 Visualizations")
+    st.header("📊 Data Visualizations")
 
     # Correlation Heatmap
     st.subheader("Correlation Heatmap")
     fig, ax = plt.subplots()
-    sns.heatmap(df.corr(), annot=True, cmap="RdYlBu", ax=ax)
+    sns.heatmap(df.corr(), annot=True, cmap="YlGnBu", ax=ax)
     st.pyplot(fig)
 
-    # Scatter Fertilizer vs Yield
+    # Fertilizer vs Yield
     st.subheader("Fertilizer vs Yield")
     fig, ax = plt.subplots()
-    sns.scatterplot(data=df, x="Fertilizer", y="Yield", ax=ax)
+    sns.scatterplot(data=df, x="Fertilizer", y="Yield", color="green", s=80, ax=ax)
+    st.pyplot(fig)
+
+    # Temperature vs Yield
+    st.subheader("Temperature vs Yield")
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=df, x="Temp", y="Yield", color="orange", s=80, ax=ax)
     st.pyplot(fig)
 
 elif menu == "🔮 Predictions":
-    st.header("🔮 Make Predictions")
-    st.markdown("Enter the input values below to predict the expected **Crop Yield (tons/hectare)**.")
+    st.header("🔮 Crop Yield Prediction")
 
-    # --- Input fields ---
+    # Model selection
+    algo = st.selectbox(
+        "Select Prediction Algorithm",
+        ["Linear Regression", "Random Forest", "Decision Tree"]
+    )
+
+    st.markdown("### Enter the Crop Parameters:")
     fertilizer = st.number_input("Fertilizer used (kg/ha)", min_value=0.0, step=0.1)
     temp = st.number_input("Temperature (°C)", min_value=0.0, step=0.1)
     N = st.number_input("Nitrogen content (N)", min_value=0.0, step=0.1)
     P = st.number_input("Phosphorus content (P)", min_value=0.0, step=0.1)
     K = st.number_input("Potassium content (K)", min_value=0.0, step=0.1)
 
-    # --- Predict Button ---
     if st.button("Predict Yield"):
         if fertilizer == 0 or temp == 0 or N == 0 or P == 0 or K == 0:
-            st.warning("⚠️ Please enter valid (non-zero) input values for all fields.")
+            st.warning("⚠️ Please enter valid (non-zero) values for all inputs.")
         else:
             input_data = np.array([[fertilizer, temp, N, P, K]])
-            prediction = rf.predict(input_data)[0]
-            yield_class = dt_clf.predict(input_data)[0]
 
-            st.success(f"🌾 **Predicted Crop Yield:** {prediction:.2f} tons/hectare")
-
-            if yield_class == 1:
-                st.info("✅ This corresponds to a **High Yield** region based on model classification.")
+            # Select model based on user choice
+            if algo == "Linear Regression":
+                prediction = lr_model.predict(input_data)
+                model_name = "Linear Regression"
+            elif algo == "Random Forest":
+                prediction = rf_model.predict(input_data)
+                model_name = "Random Forest Regressor"
             else:
-                st.warning("⚠️ This corresponds to a **Low Yield** region based on model classification.")
+                prediction = dt_model.predict(input_data)
+                model_name = "Decision Tree Regressor"
+
+            st.success(f"🌾 Predicted Crop Yield using **{model_name}**: {prediction[0]:.2f} tons/hectare")
