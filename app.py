@@ -81,16 +81,23 @@ elif menu == "📊 Visualizations":
 elif menu == "🔮 Predictions":
     st.header("🔮 Make Predictions")
 
-    fert = st.number_input("Fertilizer", min_value=0.0)
-    temp = st.number_input("Temperature", min_value=0.0)
-    n = st.number_input("Nitrogen (N)", min_value=0.0)
-    p = st.number_input("Phosphorus (P)", min_value=0.0)
-    k = st.number_input("Potassium (K)", min_value=0.0)
+import numpy as np
+import streamlit as st
 
-    if st.button("Predict Yield"):
-        input_data = np.array([[fert, temp, n, p, k]])
-        predicted_yield = rf.predict(input_data)[0]
-        yield_class = "High Yield 🌾" if dt_clf.predict(input_data)[0] == 1 else "Low Yield 🌿"
+# --- Input fields ---
+fertilizer = st.number_input("Fertilizer used (kg/ha)", min_value=0.0, step=0.1)
+temp = st.number_input("Temperature (°C)", min_value=0.0, step=0.1)
+N = st.number_input("Nitrogen content (N)", min_value=0.0, step=0.1)
+P = st.number_input("Phosphorus content (P)", min_value=0.0, step=0.1)
+K = st.number_input("Potassium content (K)", min_value=0.0, step=0.1)
 
-        st.success(f"🌱 Predicted Yield: {predicted_yield:.2f} tons/hectare")
-        st.info(f"Classification: {yield_class}")
+# --- Predict Button ---
+if st.button("Predict Yield"):
+    # Check for empty inputs (all zeros)
+    if fertilizer == 0 or temp == 0 or N == 0 or P == 0 or K == 0:
+        st.warning("⚠️ Please enter valid (non-zero) input values for all fields.")
+    else:
+        input_data = np.array([[fertilizer, temp, N, P, K]])
+        prediction = model.predict(input_data)
+        st.success(f"🌾 Predicted Crop Yield: {prediction[0]:.2f} tons/hectare")
+
