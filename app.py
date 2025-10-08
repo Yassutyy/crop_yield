@@ -11,122 +11,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score
 
 
-# ---------------- Custom Professional CSS Styling ----------------
-def set_professional_style():
-    st.markdown("""
-        <style>
-        /* =======================
-           🌑 PROFESSIONAL DARK THEME
-           ======================= */
 
-        /* Main App Background */
-        .stApp {
-            background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #0d1b2a 100%);
-            color: #e0e0e0;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        /* Sidebar */
-        section[data-testid="stSidebar"] {
-            background: #1b263b;
-            color: #ffffff;
-            border-right: 2px solid #00c853;
-        }
-
-        /* Sidebar title */
-        section[data-testid="stSidebar"] h1, 
-        section[data-testid="stSidebar"] h2, 
-        section[data-testid="stSidebar"] h3 {
-            color: #00e676 !important;
-        }
-
-        /* Buttons */
-        div.stButton > button:first-child {
-            background: linear-gradient(90deg, #00c853, #009624);
-            color: white;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            padding: 0.6em 1.2em;
-            transition: 0.3s ease;
-            box-shadow: 0px 4px 10px rgba(0, 200, 83, 0.3);
-        }
-        div.stButton > button:first-child:hover {
-            background: linear-gradient(90deg, #00e676, #00c853);
-            transform: scale(1.05);
-            box-shadow: 0px 6px 15px rgba(0, 230, 118, 0.4);
-        }
-
-        /* Titles and Headers */
-        h1, h2, h3, h4 {
-            color: #00e676;
-            font-weight: 700;
-        }
-
-        /* DataFrame Tables */
-        .stDataFrame {
-            background-color: #102030;
-            border: 1px solid #00e676;
-            border-radius: 10px;
-            padding: 10px;
-        }
-
-        /* Metric boxes / success messages */
-        .stAlert {
-            background-color: #102a43;
-            border-left: 5px solid #00c853;
-            border-radius: 8px;
-            color: #ffffff;
-        }
-
-        /* Inputs and SelectBoxes */
-        div[data-baseweb="input"] input {
-            background-color: #1b263b !important;
-            color: white !important;
-            border: 1px solid #00c853 !important;
-            border-radius: 8px !important;
-        }
-
-        div[data-baseweb="select"] > div {
-            background-color: #1b263b !important;
-            color: white !important;
-            border: 1px solid #00c853 !important;
-            border-radius: 8px !important;
-        }
-
-        /* Radio buttons, checkboxes */
-        div[role="radiogroup"] label {
-            color: #e0e0e0 !important;
-        }
-
-        /* Charts area */
-        .css-1ht1j8u, .stPlotlyChart, .stVegaLiteChart, .stAltairChart {
-            background-color: #102030;
-            border-radius: 10px;
-            padding: 10px;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #00c853;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00e676;
-        }
-
-        /* Footer / Bottom space */
-        footer {
-            visibility: hidden;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-# Apply the theme
-set_professional_style()
 
 
 # ---------------- Load Dataset ----------------
@@ -270,5 +155,6 @@ elif menu == "🔮 Predictions":
             st.success(f"**Predicted Crop Yield ({algo})**: {predicted_yield:.2f} tons/hectare")
             st.info(f"**Yield Category:** {yield_type}")
             st.write(f"📊 **Model R² Accuracy:** {accuracy:.3f}")
+
 
 
