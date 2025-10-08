@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from io import StringIO
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
@@ -23,7 +24,6 @@ Fertilizer,Temp,N,P,K,Yield
 75,34,27,12,15,4.7
 85,32,33,14,17,5.2
 """
-from io import StringIO
 df = pd.read_csv(StringIO(csv_data))
 
 # ---------------- Split Data ----------------
@@ -56,32 +56,35 @@ menu = st.sidebar.radio("Navigate", ["🏠 Home", "📂 Dataset", "📊 Visualiz
 if menu == "🏠 Home":
     st.title("🌱 AgriYield – Crop Yield Prediction Dashboard")
     st.markdown("""
-    Welcome to **AgriYield**, an interactive dashboard for crop yield prediction.
+    Welcome to **AgriYield**, an interactive dashboard for **crop yield prediction**.
 
-    This project uses **Machine Learning algorithms** to predict how much yield (in tons/hectare) 
-    a farmer can expect based on:
+    This project uses **Machine Learning algorithms** to estimate the expected yield 
+    (in tons/hectare) based on:
     - Fertilizer usage  
     - Temperature  
     - Soil nutrients (N, P, K)
 
-    Models Used:
+    ### 🤖 Models Used:
     - Linear Regression  
     - Random Forest Regressor  
     - Decision Tree Regressor
     """)
 
+    # Display Model Accuracies
     st.subheader("📈 Model Accuracies (R² Score)")
     acc_data = {
-        "Model": ["Linear Regression", "Random Forest"],
-        "R² Accuracy": [lr_acc, rf_acc]
+        "Model": ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"],
+        "R² Score": [lr_acc, rf_acc, dt_acc]
     }
     acc_df = pd.DataFrame(acc_data)
-    st.write(acc_df)
+    st.dataframe(acc_df)
 
     # Bar chart comparison
+    st.subheader("📊 Model Comparison")
     fig, ax = plt.subplots()
-    sns.barplot(data=acc_df, x="Model", y="R² Accuracy", palette="viridis", ax=ax)
-    plt.ylim(0, 1)
+    sns.barplot(data=acc_df, x="Model", y="R² Score", palette="YlGnBu", ax=ax)
+    ax.set_ylim(0, 1)
+    ax.set_title("Model R² Accuracy Comparison")
     st.pyplot(fig)
 
 elif menu == "📂 Dataset":
@@ -114,10 +117,10 @@ elif menu == "🔮 Predictions":
 
     algo = st.selectbox(
         "Select Algorithm for Prediction:",
-        ["Linear Regression", "Random Forest", "Decision Tree"]
+        ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"]
     )
 
-    st.markdown("### Enter the Crop Parameters:")
+    st.markdown("### 🌾 Enter the Crop Parameters:")
     fertilizer = st.number_input("Fertilizer used (kg/ha)", min_value=0.0, step=0.1)
     temp = st.number_input("Temperature (°C)", min_value=0.0, step=0.1)
     N = st.number_input("Nitrogen content (N)", min_value=0.0, step=0.1)
@@ -131,22 +134,20 @@ elif menu == "🔮 Predictions":
             input_data = np.array([[fertilizer, temp, N, P, K]])
 
             if algo == "Linear Regression":
-                prediction = lr_model.predict(input_data)
-                model_name = "Linear Regression"
+                model = lr_model
                 accuracy = lr_acc
-            elif algo == "Random Forest":
-                prediction = rf_model.predict(input_data)
-                model_name = "Random Forest Regressor"
+            elif algo == "Random Forest Regressor":
+                model = rf_model
                 accuracy = rf_acc
             else:
-                prediction = dt_model.predict(input_data)
-                model_name = "Decision Tree Regressor"
+                model = dt_model
                 accuracy = dt_acc
 
+            prediction = model.predict(input_data)
             predicted_yield = prediction[0]
+
             yield_type = "🌾 High Yield" if predicted_yield > median_yield else "🌱 Low Yield"
 
-            st.success(f"**Predicted Crop Yield ({model_name})**: {predicted_yield:.2f} tons/hectare")
-            st.info(f"Yield Category: **{yield_type}**")
-            st.write(f"📊 **Model Accuracy (R² Score): {accuracy:.2f}**")
-
+            st.success(f"**Predicted Crop Yield ({algo})**: {predicted_yield:.2f} tons/hectare")
+            st.info(f"**Yield Category:** {yield_type}")
+            st.write(f"📊 **Model R² Accuracy:** {accuracy:.3f}")
