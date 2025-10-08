@@ -10,6 +10,61 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score
 
+
+# ---------------- Custom CSS Styling ----------------
+def set_custom_style():
+    st.markdown("""
+        <style>
+        /* 🌿 Main Page Background */
+        .stApp {
+            background-color: #f8fff1;
+            background-image: linear-gradient(120deg, #e3f9e5 0%, #f8fff1 100%);
+        }
+
+        /* 🌾 Sidebar Styling */
+        section[data-testid="stSidebar"] {
+            background-color: #e0f7da;
+            border-right: 2px solid #66bb6a;
+        }
+
+        /* 🟢 Buttons */
+        div.stButton > button:first-child {
+            background-color: #43a047;
+            color: white;
+            font-weight: 600;
+            border-radius: 10px;
+            border: none;
+            padding: 0.6em 1.2em;
+            transition: 0.3s;
+        }
+        div.stButton > button:first-child:hover {
+            background-color: #2e7d32;
+            transform: scale(1.05);
+        }
+
+        /* 🌱 Headings */
+        h1, h2, h3, h4, h5, h6 {
+            color: #2e7d32;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* 📊 DataFrames */
+        .stDataFrame {
+            background-color: white;
+            border-radius: 10px;
+        }
+
+        /* ⚠️ Warnings & Success messages */
+        .stAlert {
+            border-radius: 10px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+# Apply style
+set_custom_style()
+
+
 # ---------------- Load Dataset ----------------
 csv_data = """
 Fertilizer,Temp,N,P,K,Yield
@@ -151,3 +206,4 @@ elif menu == "🔮 Predictions":
             st.success(f"**Predicted Crop Yield ({algo})**: {predicted_yield:.2f} tons/hectare")
             st.info(f"**Yield Category:** {yield_type}")
             st.write(f"📊 **Model R² Accuracy:** {accuracy:.3f}")
+
