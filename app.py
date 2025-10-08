@@ -72,8 +72,8 @@ if menu == "🏠 Home":
 
     st.subheader("📈 Model Accuracies (R² Score)")
     acc_data = {
-        "Model": ["Linear Regression", "Random Forest", "Decision Tree"],
-        "R² Accuracy": [lr_acc, rf_acc, dt_acc]
+        "Model": ["Linear Regression", "Random Forest"],
+        "R² Accuracy": [lr_acc, rf_acc]
     }
     acc_df = pd.DataFrame(acc_data)
     st.write(acc_df)
@@ -149,3 +149,4 @@ elif menu == "🔮 Predictions":
             st.success(f"**Predicted Crop Yield ({model_name})**: {predicted_yield:.2f} tons/hectare")
             st.info(f"Yield Category: **{yield_type}**")
             st.write(f"📊 **Model Accuracy (R² Score): {accuracy:.2f}**")
+
