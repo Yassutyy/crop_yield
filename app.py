@@ -149,17 +149,31 @@ elif menu == "🔮 Predictions":
 
             prediction = model.predict(input_data)
             predicted_yield = prediction[0]
-
             yield_type = "🌾 High Yield" if predicted_yield > median_yield else "🌱 Low Yield"
 
             st.success(f"**Predicted Crop Yield ({algo})**: {predicted_yield:.2f} tons/hectare")
             st.info(f"**Yield Category:** {yield_type}")
             st.write(f"📊 **Model R² Accuracy:** {accuracy:.3f}")
 
-         st.subheader("📈 Model Accuracies (R² Score)")
-         acc_data = {
+    # --- Display All Model Accuracies ---
+    st.markdown("---")
+    st.subheader("📈 Model Accuracies (R² Score)")
+    acc_data = {
         "Model": ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"],
         "R² Score": [lr_acc, rf_acc, dt_acc]
+    }
+    acc_df = pd.DataFrame(acc_data)
+
+    # Display neatly in table form
+    st.dataframe(acc_df, use_container_width=True)
+
+    # Optional: add bar chart for better visualization
+    fig, ax = plt.subplots()
+    sns.barplot(data=acc_df, x="Model", y="R² Score", palette="Greens", ax=ax)
+    ax.set_ylim(0, 1)
+    ax.set_title("Model Accuracy Comparison")
+    st.pyplot(fig)
+
 
 
 
