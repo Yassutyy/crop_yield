@@ -156,5 +156,11 @@ elif menu == "🔮 Predictions":
             st.info(f"**Yield Category:** {yield_type}")
             st.write(f"📊 **Model R² Accuracy:** {accuracy:.3f}")
 
+         st.subheader("📈 Model Accuracies (R² Score)")
+    acc_data = {
+        "Model": ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"],
+        "R² Score": [lr_acc, rf_acc, dt_acc]
+
+
 
 
