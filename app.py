@@ -11,9 +11,6 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score
 
 
-
-
-
 # ---------------- Load Dataset ----------------
 csv_data = """
 Fertilizer,Temp,N,P,K,Yield
@@ -58,38 +55,37 @@ menu = st.sidebar.radio("Navigate", ["🏠 Home", "📂 Dataset", "📊 Visualiz
 
 # ---------------- Pages ----------------
 if menu == "🏠 Home":
-    st.title("🌱 AgriYield – Crop Yield Prediction Dashboard")
+    st.title("🌱 AgriYield – Smart Crop Yield Prediction System")
     st.markdown("""
-    Welcome to **AgriYield**, an interactive dashboard for **crop yield prediction**.
+    ### 🌾 Overview
+    Agriculture plays a vital role in sustaining human life. The **AgriYield Dashboard** is designed to 
+    help farmers, researchers, and agricultural planners make **data-driven decisions** for improving 
+    crop yield.
 
-    This project uses **Machine Learning algorithms** to estimate the expected yield 
-    (in tons/hectare) based on:
+    ### 🎯 Objective
+    This system predicts the **expected crop yield (tons/hectare)** based on critical input parameters like:
     - Fertilizer usage  
     - Temperature  
-    - Soil nutrients (N, P, K)
+    - Soil nutrients (Nitrogen, Phosphorus, and Potassium levels)
 
-    ### 🤖 Models Used:
-    - Linear Regression  
-    - Random Forest Regressor  
-    - Decision Tree Regressor
+    ### 🤖 Machine Learning Integration
+    The dashboard uses **three machine learning algorithms**:
+    - **Linear Regression** – for basic linear trend estimation  
+    - **Random Forest Regressor** – for high accuracy and stability  
+    - **Decision Tree Regressor** – for clear rule-based decision making  
+
+    Each algorithm is trained using real-world agricultural data to forecast crop performance effectively.
+
+    ### 🌟 Key Features
+    - Simple and interactive interface  
+    - Multiple model selection for prediction  
+    - Real-time yield estimation based on entered parameters  
+    - Supports visualization for better understanding of relationships  
+
+    ---
+    **Use the sidebar to navigate** through the dataset, visualizations, and prediction modules.
     """)
 
-    # Display Model Accuracies
-    st.subheader("📈 Model Accuracies (R² Score)")
-    acc_data = {
-        "Model": ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"],
-        "R² Score": [lr_acc, rf_acc, dt_acc]
-    }
-    acc_df = pd.DataFrame(acc_data)
-    st.dataframe(acc_df)
-
-    # Bar chart comparison
-    st.subheader("📊 Model Comparison")
-    fig, ax = plt.subplots()
-    sns.barplot(data=acc_df, x="Model", y="R² Score", palette="YlGnBu", ax=ax)
-    ax.set_ylim(0, 1)
-    ax.set_title("Model R² Accuracy Comparison")
-    st.pyplot(fig)
 
 elif menu == "📂 Dataset":
     st.header("📂 Dataset Preview")
@@ -97,6 +93,7 @@ elif menu == "📂 Dataset":
 
     st.subheader("📊 Summary Statistics")
     st.write(df.describe())
+
 
 elif menu == "📊 Visualizations":
     st.header("📊 Data Visualizations")
@@ -115,6 +112,7 @@ elif menu == "📊 Visualizations":
     fig, ax = plt.subplots()
     sns.scatterplot(data=df, x="Temp", y="Yield", color="orange", s=80, ax=ax)
     st.pyplot(fig)
+
 
 elif menu == "🔮 Predictions":
     st.header("🔮 Crop Yield Prediction")
@@ -153,29 +151,4 @@ elif menu == "🔮 Predictions":
 
             st.success(f"**Predicted Crop Yield ({algo})**: {predicted_yield:.2f} tons/hectare")
             st.info(f"**Yield Category:** {yield_type}")
-            st.write(f"📊 **Model R² Accuracy:** {accuracy:.3f}")
-
-    # --- Display All Model Accuracies ---
-    st.markdown("---")
-    st.subheader("📈 Model Accuracies (R² Score)")
-    acc_data = {
-        "Model": ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"],
-        "R² Score": [lr_acc, rf_acc, dt_acc]
-    }
-    acc_df = pd.DataFrame(acc_data)
-
-    # Display neatly in table form
-    st.dataframe(acc_df, use_container_width=True)
-
-    # Optional: add bar chart for better visualization
-    fig, ax = plt.subplots()
-    sns.barplot(data=acc_df, x="Model", y="R² Score", palette="Greens", ax=ax)
-    ax.set_ylim(0, 1)
-    ax.set_title("Model Accuracy Comparison")
-    st.pyplot(fig)
-
-
-
-
-
-
+            st.caption(f"Model Accuracy (R²): {accuracy:.3f}")
