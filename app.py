@@ -72,15 +72,13 @@ if menu == "🏠 Home":
     The dashboard uses **three machine learning algorithms**:
     - **Linear Regression** – for basic linear trend estimation  
     - **Random Forest Regressor** – for high accuracy and stability  
-    - **Decision Tree Regressor** – for clear rule-based decision making  
-
-    Each algorithm is trained using real-world agricultural data to forecast crop performance effectively.
+    - **Decision Tree Regressor** – for rule-based prediction  
 
     ### 🌟 Key Features
     - Simple and interactive interface  
     - Multiple model selection for prediction  
-    - Real-time yield estimation based on entered parameters  
-    - Supports visualization for better understanding of relationships  
+    - Real-time yield estimation based on user input  
+    - Graphical visualizations for better understanding  
 
     ---
     **Use the sidebar to navigate** through the dataset, visualizations, and prediction modules.
@@ -152,3 +150,22 @@ elif menu == "🔮 Predictions":
             st.success(f"**Predicted Crop Yield ({algo})**: {predicted_yield:.2f} tons/hectare")
             st.info(f"**Yield Category:** {yield_type}")
             st.caption(f"Model Accuracy (R²): {accuracy:.3f}")
+
+    # --- Display All Model Accuracies ---
+    st.markdown("---")
+    st.subheader("📈 Model Accuracies (R² Score)")
+    acc_data = {
+        "Model": ["Linear Regression", "Random Forest Regressor", "Decision Tree Regressor"],
+        "R² Score": [lr_acc, rf_acc, dt_acc]
+    }
+    acc_df = pd.DataFrame(acc_data)
+
+    # Display neatly in table form
+    st.dataframe(acc_df, use_container_width=True)
+
+    # Optional: add bar chart for better visualization
+    fig, ax = plt.subplots()
+    sns.barplot(data=acc_df, x="Model", y="R² Score", palette="Greens", ax=ax)
+    ax.set_ylim(0, 1)
+    ax.set_title("Model Accuracy Comparison")
+    st.pyplot(fig)
